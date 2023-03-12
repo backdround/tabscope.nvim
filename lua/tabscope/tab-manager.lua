@@ -28,7 +28,7 @@ local function new(buffer_manager)
     m.buffer_manager.ignore_events = false
   end
 
-  u.set_autocmd("BufEnter", m.try_to_switch_tab)
+  u.set_improved_bufenter_autocmd(m.try_to_switch_tab)
   u.set_autocmd("TabLeave", function()
     m.previous_tab = vim.api.nvim_get_current_tabpage()
   end)

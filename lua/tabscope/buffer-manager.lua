@@ -61,7 +61,7 @@ local function new()
 
   m.ignore_events = false
 
-  u.set_autocmd("BufEnter", function()
+  u.set_improved_bufenter_autocmd(function()
     if not m.ignore_events then
       m._try_to_track_current_buffer()
     end
