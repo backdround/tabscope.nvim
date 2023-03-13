@@ -42,8 +42,8 @@ local function new()
       return
     end
 
-    for _, tab_buffers in ipairs(m._buffers_by_tab) do
-      tab_buffers[buffer] = nil
+    for _, buffers in pairs(m._buffers_by_tab) do
+      buffers[buffer] = nil
     end
   end
 
