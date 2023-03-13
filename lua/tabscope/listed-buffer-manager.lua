@@ -3,17 +3,11 @@ local u = require("tabscope.utils")
 -- Returns a table that manages listed buffers.
 local function new(tab_buffer_manager)
   local m = {}
-  m.tab_buffer_manager = tab_buffer_manager
-  m.have_to_update = false
+  m._tab_buffer_manager = tab_buffer_manager
 
   m.update = function()
-    if not m.have_to_update then
-      return
-    end
-    m.have_to_update = false
-
     local current_listed_buffers = u.get_listed_buffers()
-    local new_tab_buffers = m.tab_buffer_manager.tab_get_buffers(0)
+    local new_tab_buffers = m._tab_buffer_manager.tab_get_buffers(0)
 
     -- Delists buffers that aren't tab local.
     local buffers_to_delist = {}
@@ -23,11 +17,11 @@ local function new(tab_buffer_manager)
       end
     end
 
-    m.tab_buffer_manager.ignore_buf_unlisting = true
+    m._tab_buffer_manager.ignore_buf_unlisting = true
     for _, buffer in ipairs(buffers_to_delist) do
       vim.bo[buffer].buflisted = false
     end
-    m.tab_buffer_manager.ignore_buf_unlisting = false
+    m._tab_buffer_manager.ignore_buf_unlisting = false
 
     -- Lists buffers that tab local.
     local buffers_to_list = {}
@@ -42,9 +36,16 @@ local function new(tab_buffer_manager)
     end
   end
 
-  u.set_improved_bufenter_autocmd(m.update)
+  m._try_to_update = function()
+    if m._have_to_update then
+      m.update()
+      m._have_to_update = false
+    end
+  end
+
+  u.set_improved_bufenter_autocmd(m._try_to_update)
   u.set_autocmd("TabLeave", function()
-    m.have_to_update = true
+    m._have_to_update = true
   end)
 
   return m
