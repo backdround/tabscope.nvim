@@ -59,16 +59,12 @@ local function new()
     return m._buffers_by_tab[tab]
   end
 
-  m.ignore_events = false
 
-  u.set_improved_bufenter_autocmd(function()
-    if not m.ignore_events then
-      m._try_to_track_current_buffer()
-    end
-  end)
+  u.set_improved_bufenter_autocmd(m._try_to_track_current_buffer)
 
+  m.ignore_buf_hiding = false
   u.set_autocmd("BufDelete", function()
-    if not m.ignore_events then
+    if not m.ignore_buf_hiding then
       m._try_to_untrack_abuf()
     end
   end)
