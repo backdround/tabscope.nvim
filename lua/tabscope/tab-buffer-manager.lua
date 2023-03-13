@@ -1,6 +1,6 @@
 local u = require("tabscope.utils")
 
--- Returns a table that stores and tracks tab local buffers.
+-- Returns a table that tracks tab local buffers.
 local function new()
   local m = {}
   m._buffers_by_tab = {}
@@ -14,6 +14,7 @@ local function new()
       return false
     end
 
+    -- If the buffer is already tracks then it's trackable.
     for _, buffers in pairs(m._buffers_by_tab) do
       for buffer, _ in pairs(buffers) do
         if buffer == id then
@@ -26,7 +27,8 @@ local function new()
     return listed
   end
 
-  m._try_to_track_current_buffer = function()
+  -- Tries to start tracks for current buffer
+  m._buffer_focus_handler = function()
     local buffer = vim.api.nvim_get_current_buf()
     if not m._is_buffer_trackable(buffer) then
       return
@@ -39,9 +41,10 @@ local function new()
     m._buffers_by_tab[current_tab][buffer] = true
   end
 
-  m._try_to_untrack_abuf = function()
+  m._buffer_unlisted_handler = function()
     local buffer = tonumber(vim.fn.expand("<abuf>"))
     if type(buffer) ~= "number" then
+      u.unexpected_behaviour()
       return
     end
 
@@ -50,9 +53,10 @@ local function new()
     end
   end
 
-  m._tab_closed_event = function()
+  m._tab_closed_handler = function()
     local tab = tonumber(vim.fn.expand("<afile>"))
     if type(tab) ~= "number" then
+      u.unexpected_behaviour()
       return
     end
 
@@ -76,17 +80,18 @@ local function new()
     return tab_local_buffers
   end
 
+  m.ignore_buf_unlisting = false
 
-  u.set_improved_bufenter_autocmd(m._try_to_track_current_buffer)
+  -- Sets event handlers
+  u.set_improved_bufenter_autocmd(m._buffer_focus_handler)
 
-  m.ignore_buf_hiding = false
   u.set_autocmd("BufDelete", function()
-    if not m.ignore_buf_hiding then
-      m._try_to_untrack_abuf()
+    if not m.ignore_buf_unlisting then
+      m._buffer_unlisted_handler()
     end
   end)
 
-  u.set_autocmd("TabClosed", m._tab_closed_event)
+  u.set_autocmd("TabClosed", m._tab_closed_handler)
 
   return m
 end

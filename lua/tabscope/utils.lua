@@ -41,9 +41,9 @@ M.set_improved_bufenter_autocmd = function(callback)
       end)
     end,
   })
-
 end
 
+-- Returns a list of current listed buffers
 M.get_listed_buffers = function()
   local listed_buffers = {}
   for _, buffer in ipairs(vim.api.nvim_list_bufs()) do
@@ -52,6 +52,12 @@ M.get_listed_buffers = function()
     end
   end
   return listed_buffers
+end
+
+-- Function to call when something gone wrong
+M.unexpected_behaviour = function()
+  local message = debug.traceback("Something gone wrong. Please file an issue:")
+  vim.notify_once(message, vim.log.levels.WARN)
 end
 
 return M
