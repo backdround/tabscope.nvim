@@ -44,4 +44,14 @@ M.set_improved_bufenter_autocmd = function(callback)
 
 end
 
+M.get_listed_buffers = function()
+  local listed_buffers = {}
+  for _, buffer in ipairs(vim.api.nvim_list_bufs()) do
+    if vim.bo[buffer].buflisted then
+      table.insert(listed_buffers, buffer)
+    end
+  end
+  return listed_buffers
+end
+
 return M

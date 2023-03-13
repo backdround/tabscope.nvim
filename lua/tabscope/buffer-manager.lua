@@ -32,8 +32,11 @@ local function new()
       return
     end
 
-    local current_tab_buffers = m.tab_get_buffers(0)
-    current_tab_buffers[buffer] = true
+    local current_tab = vim.api.nvim_get_current_tabpage()
+    if not m._buffers_by_tab[current_tab] then
+      m._buffers_by_tab[current_tab] = {}
+    end
+    m._buffers_by_tab[current_tab][buffer] = true
   end
 
   m._try_to_untrack_abuf = function()
@@ -47,16 +50,30 @@ local function new()
     end
   end
 
+  m._tab_closed_event = function()
+    local tab = tonumber(vim.fn.expand("<afile>"))
+    if type(tab) ~= "number" then
+      return
+    end
+
+    m._buffers_by_tab[tab] = nil
+  end
+
+  -- Returns a list of tab local buffers
   m.tab_get_buffers = function(tab)
     if not tab or tab < 1 then
       tab = vim.api.nvim_get_current_tabpage()
     end
 
     if m._buffers_by_tab[tab] == nil then
-      m._buffers_by_tab[tab] = {}
+      return {}
     end
 
-    return m._buffers_by_tab[tab]
+    local tab_local_buffers = {}
+    for buffer, _ in pairs(m._buffers_by_tab[tab]) do
+      table.insert(tab_local_buffers, buffer)
+    end
+    return tab_local_buffers
   end
 
 
@@ -68,6 +85,8 @@ local function new()
       m._try_to_untrack_abuf()
     end
   end)
+
+  u.set_autocmd("TabClosed", m._tab_closed_event)
 
   return m
 end
