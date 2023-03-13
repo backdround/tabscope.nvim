@@ -53,14 +53,19 @@ local function new()
     end
   end
 
+  -- Stops tracking closed tabs
   m._tab_closed_handler = function()
-    local tab = tonumber(vim.fn.expand("<afile>"))
-    if type(tab) ~= "number" then
-      u.unexpected_behaviour()
-      return
+    local current_tabs = vim.api.nvim_list_tabpages()
+    local closed_tabs = {}
+    for tab, _ in pairs(m._buffers_by_tab) do
+      if not vim.tbl_contains(current_tabs, tab) then
+        table.insert(closed_tabs, tab)
+      end
     end
 
-    m._buffers_by_tab[tab] = nil
+    for _, tab in ipairs(closed_tabs) do
+      m._buffers_by_tab[tab] = nil
+    end
   end
 
   -- Resets all internal data. Reacquires only visible buffers.
@@ -79,11 +84,9 @@ local function new()
     m._buffers_by_tab = new_buffers_by_tab
   end
 
-  -- Returns a list of tab local buffers
-  m.tab_get_buffers = function(tab)
-    if not tab or tab < 1 then
-      tab = vim.api.nvim_get_current_tabpage()
-    end
+  -- Returns a list of current tab local buffers
+  m.tab_get_current_local_buffers = function()
+    local tab = vim.api.nvim_get_current_tabpage()
 
     if m._buffers_by_tab[tab] == nil then
       return {}

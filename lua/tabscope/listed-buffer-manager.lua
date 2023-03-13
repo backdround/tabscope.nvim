@@ -7,7 +7,8 @@ local function new(tab_buffer_manager)
 
   m.update = function()
     local current_listed_buffers = u.get_listed_buffers()
-    local new_tab_buffers = m._tab_buffer_manager.tab_get_buffers(0)
+    local new_tab_buffers =
+      m._tab_buffer_manager.tab_get_current_local_buffers()
 
     -- Delists buffers that aren't tab local.
     local buffers_to_delist = {}
