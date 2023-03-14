@@ -89,6 +89,14 @@ local function new()
     b._on_buf_untrack_callbacks[id] = callback
   end
 
+  b.get_internal_representation = function()
+    local representation = "Tracked buffers:\n"
+    for id, _ in pairs(b._buffers) do
+      representation = representation .. "  " .. tostring(id) .. "\n"
+    end
+    return representation
+  end
+
   return b
 end
 

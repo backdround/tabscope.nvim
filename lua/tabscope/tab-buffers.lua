@@ -72,6 +72,20 @@ local function new(tracked_buffers)
     return tab_local_buffers
   end
 
+  m.get_internal_representation = function()
+    local representation = "Tab local buffers:\n"
+    for tab, buffers in pairs(m._buffers_by_tab) do
+      representation = representation .. "  tab " .. tostring(tab) .. ":\n"
+      for buffer, _ in pairs(buffers) do
+        local name = vim.api.nvim_buf_get_name(buffer)
+        name = vim.fn.fnamemodify(name, ":t")
+        representation =
+          string.format("%s    %s %s\n", representation, buffer, name)
+      end
+    end
+    return representation
+  end
+
   -- Sets event handlers
   u.on_buffocused(m._buffer_focus_handler)
   u.on_event("TabClosed", m._tab_closed_handler)

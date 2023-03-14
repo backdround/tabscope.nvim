@@ -44,6 +44,31 @@ M.on_buffocused = function(callback)
   })
 end
 
+M.get_listed_buffers_representation = function()
+  local representation = "Listed buffers:\n"
+  for _, id in ipairs(vim.api.nvim_list_bufs()) do
+    if vim.bo[id].buflisted then
+      representation = representation .. "  " .. tostring(id) .. "\n"
+    end
+  end
+  return representation
+end
+
+M.get_tabs_representation = function()
+  local representation = "Tab visible buffers:\n"
+  for _, tab in ipairs(vim.api.nvim_list_tabpages()) do
+    representation = representation .. "  tab " .. tostring(tab) .. ":\n"
+    for _, win in ipairs(vim.api.nvim_tabpage_list_wins(tab)) do
+      local buffer = vim.api.nvim_win_get_buf(win)
+      local name = vim.api.nvim_buf_get_name(buffer)
+      name = vim.fn.fnamemodify(name, ":t")
+      representation =
+        string.format("%s    %s %s\n", representation, buffer, name)
+    end
+  end
+  return representation
+end
+
 -- Function to call when something gone wrong
 M.unexpected_behaviour = function()
   local message = debug.traceback("Something gone wrong. Please file an issue:")
