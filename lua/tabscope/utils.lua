@@ -7,17 +7,18 @@ M._get_augroup = function()
   return M._augroup
 end
 
--- Creates auto command
-M.set_autocmd = function(event, callback)
+-- Registers callback that triggers when event happend
+M.on_event = function(event, callback)
   vim.api.nvim_create_autocmd(event, {
     group = M._get_augroup(),
     callback = callback,
   })
 end
 
--- Creates auto command that triggered like bufEnter, but it triggers
--- if buffer changes to the same buffer (like :sbuffer / :tab sbuffer)
-M.set_improved_bufenter_autocmd = function(callback)
+-- Registers callback that triggers when buffer focussed.
+-- It's like bufEnter, but it also triggers when a buffer changes to
+-- the same buffer, like :sbuffer or :tab sbuffer
+M.on_buffocused = function(callback)
   local triggered = false
 
   vim.api.nvim_create_autocmd("BufEnter", {

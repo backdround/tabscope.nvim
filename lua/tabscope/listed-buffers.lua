@@ -1,20 +1,19 @@
 local u = require("tabscope.utils")
 
 -- Returns a table that manages listed buffers.
-local function new(tracked_buffers, tab_buffer_manager)
+local function new(tracked_buffers, tab_buffers)
   local m = {}
-  m._tab_buffer_manager = tab_buffer_manager
+  m._tab_buffers = tab_buffers
   m._tracked_buffers = tracked_buffers
 
   m.update = function()
     local current_listed_buffers = m._tracked_buffers.get_listed_buffers()
-    local new_tab_buffers =
-      m._tab_buffer_manager.tab_get_current_local_buffers()
+    local current_tab_local_buffers = m._tab_buffers.get_current_tab_local_buffers()
 
     -- Delists buffers that aren't tab local.
     local buffers_to_delist = {}
     for _, buffer in ipairs(current_listed_buffers) do
-      if not vim.tbl_contains(new_tab_buffers, buffer) then
+      if not vim.tbl_contains(current_tab_local_buffers, buffer) then
         table.insert(buffers_to_delist, buffer)
       end
     end
@@ -25,7 +24,7 @@ local function new(tracked_buffers, tab_buffer_manager)
 
     -- Lists buffers that tab local.
     local buffers_to_list = {}
-    for _, buffer in ipairs(new_tab_buffers) do
+    for _, buffer in ipairs(current_tab_local_buffers) do
       if not vim.tbl_contains(current_listed_buffers, buffer) then
         table.insert(buffers_to_list, buffer)
       end
@@ -43,8 +42,8 @@ local function new(tracked_buffers, tab_buffer_manager)
     end
   end
 
-  u.set_improved_bufenter_autocmd(m._try_to_update)
-  u.set_autocmd("TabLeave", function()
+  u.on_buffocused(m._try_to_update)
+  u.on_event("TabLeave", function()
     m._have_to_update = true
   end)
 

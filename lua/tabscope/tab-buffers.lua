@@ -58,7 +58,7 @@ local function new(tracked_buffers)
   end
 
   -- Returns a list of current tab local buffers
-  m.tab_get_current_local_buffers = function()
+  m.get_current_tab_local_buffers = function()
     local tab = vim.api.nvim_get_current_tabpage()
 
     if m._buffers_by_tab[tab] == nil then
@@ -73,11 +73,9 @@ local function new(tracked_buffers)
   end
 
   -- Sets event handlers
-  u.set_improved_bufenter_autocmd(m._buffer_focus_handler)
-
+  u.on_buffocused(m._buffer_focus_handler)
+  u.on_event("TabClosed", m._tab_closed_handler)
   m._tracked_buffers.on_buf_untrack("tab-buffers", m._buffer_untrack_handler)
-
-  u.set_autocmd("TabClosed", m._tab_closed_handler)
 
   return m
 end

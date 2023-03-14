@@ -44,8 +44,8 @@ local function new()
   end
 
   -- Sets event handlers
-  u.set_autocmd("BufAdd", b._add)
-  u.set_autocmd("BufDelete", b._delete)
+  u.on_event("BufAdd", b._add)
+  u.on_event("BufDelete", b._delete)
 
   b.hide = function(id)
     -- Buffer must be tracked
