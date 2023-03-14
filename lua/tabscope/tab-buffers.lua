@@ -6,6 +6,17 @@ local function new(tracked_buffers)
   m._tracked_buffers = tracked_buffers
   m._buffers_by_tab = {}
 
+  -- Acquires only visible buffers.
+  for _, tab in ipairs(vim.api.nvim_list_tabpages()) do
+    m._buffers_by_tab[tab] = {}
+    for _, win in ipairs(vim.api.nvim_tabpage_list_wins(tab)) do
+      local buffer = vim.api.nvim_win_get_buf(win)
+      if m._tracked_buffers.is_tracked(buffer) then
+        m._buffers_by_tab[tab][buffer] = true
+      end
+    end
+  end
+
   -- Tries to start tracks for current buffer
   m._buffer_focus_handler = function()
     local buffer = vim.api.nvim_get_current_buf()
@@ -58,22 +69,6 @@ local function new(tracked_buffers)
     for _, tab in ipairs(closed_tabs) do
       m._buffers_by_tab[tab] = nil
     end
-  end
-
-  -- Resets all internal data. Reacquires only visible buffers.
-  m.reset = function()
-    -- Reacquires visible buffers.
-    local new_buffers_by_tab = {}
-    for _, tab in ipairs(vim.api.nvim_list_tabpages()) do
-      new_buffers_by_tab[tab] = {}
-      for _, win in ipairs(vim.api.nvim_tabpage_list_wins(tab)) do
-        local buffer = vim.api.nvim_win_get_buf(win)
-        if m._tracked_buffers.is_tracked(buffer) then
-          new_buffers_by_tab[tab][buffer] = true
-        end
-      end
-    end
-    m._buffers_by_tab = new_buffers_by_tab
   end
 
   -- Returns a list of current tab local buffers
