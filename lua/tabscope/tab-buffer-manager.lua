@@ -1,36 +1,15 @@
 local u = require("tabscope.utils")
 
 -- Returns a table that tracks tab local buffers.
-local function new()
+local function new(tracked_buffers)
   local m = {}
+  m._tracked_buffers = tracked_buffers
   m._buffers_by_tab = {}
-
-  m._is_buffer_trackable = function(id)
-    if id == nil or id < 1 then
-      return false
-    end
-
-    if not vim.api.nvim_buf_is_valid(id) then
-      return false
-    end
-
-    -- If the buffer is already tracks then it's trackable.
-    for _, buffers in pairs(m._buffers_by_tab) do
-      for buffer, _ in pairs(buffers) do
-        if buffer == id then
-          return true
-        end
-      end
-    end
-
-    local listed = vim.bo[id].buflisted
-    return listed
-  end
 
   -- Tries to start tracks for current buffer
   m._buffer_focus_handler = function()
     local buffer = vim.api.nvim_get_current_buf()
-    if not m._is_buffer_trackable(buffer) then
+    if not m._tracked_buffers.is_tracked(buffer) then
       return
     end
 
@@ -41,15 +20,9 @@ local function new()
     m._buffers_by_tab[current_tab][buffer] = true
   end
 
-  m._buffer_unlisted_handler = function()
-    local buffer = tonumber(vim.fn.expand("<abuf>"))
-    if type(buffer) ~= "number" then
-      u.unexpected_behaviour()
-      return
-    end
-
+  m._buffer_untrack_handler = function(id)
     for _, buffers in pairs(m._buffers_by_tab) do
-      buffers[buffer] = nil
+      buffers[id] = nil
     end
   end
 
@@ -76,7 +49,7 @@ local function new()
       new_buffers_by_tab[tab] = {}
       for _, win in ipairs(vim.api.nvim_tabpage_list_wins(tab)) do
         local buffer = vim.api.nvim_win_get_buf(win)
-        if m._is_buffer_trackable(buffer) then
+        if m._tracked_buffers.is_tracked(buffer) then
           new_buffers_by_tab[tab][buffer] = true
         end
       end
@@ -99,16 +72,10 @@ local function new()
     return tab_local_buffers
   end
 
-  m.ignore_buf_unlisting = false
-
   -- Sets event handlers
   u.set_improved_bufenter_autocmd(m._buffer_focus_handler)
 
-  u.set_autocmd("BufDelete", function()
-    if not m.ignore_buf_unlisting then
-      m._buffer_unlisted_handler()
-    end
-  end)
+  m._tracked_buffers.on_buf_untrack("tab-buffers", m._buffer_untrack_handler)
 
   u.set_autocmd("TabClosed", m._tab_closed_handler)
 

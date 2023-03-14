@@ -1,10 +1,10 @@
 local M = {}
 
 M.setup = function(_)
-  local tab_buffer_manager = require("tabscope.tab-buffer-manager").new()
-
+  local tracked_buffers = require("tabscope.tracked-buffers").new()
+  local tab_buffer_manager = require("tabscope.tab-buffer-manager").new(tracked_buffers)
   M.listed_buffer_manager =
-    require("tabscope.listed-buffer-manager").new(tab_buffer_manager)
+    require("tabscope.listed-buffer-manager").new(tracked_buffers, tab_buffer_manager)
 
   local reset_plugin_state = function()
     tab_buffer_manager.reset()

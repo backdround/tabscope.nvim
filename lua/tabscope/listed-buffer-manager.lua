@@ -1,12 +1,13 @@
 local u = require("tabscope.utils")
 
 -- Returns a table that manages listed buffers.
-local function new(tab_buffer_manager)
+local function new(tracked_buffers, tab_buffer_manager)
   local m = {}
   m._tab_buffer_manager = tab_buffer_manager
+  m._tracked_buffers = tracked_buffers
 
   m.update = function()
-    local current_listed_buffers = u.get_listed_buffers()
+    local current_listed_buffers = m._tracked_buffers.get_listed_buffers()
     local new_tab_buffers =
       m._tab_buffer_manager.tab_get_current_local_buffers()
 
@@ -18,11 +19,9 @@ local function new(tab_buffer_manager)
       end
     end
 
-    m._tab_buffer_manager.ignore_buf_unlisting = true
     for _, buffer in ipairs(buffers_to_delist) do
-      vim.bo[buffer].buflisted = false
+      m._tracked_buffers.hide(buffer)
     end
-    m._tab_buffer_manager.ignore_buf_unlisting = false
 
     -- Lists buffers that tab local.
     local buffers_to_list = {}
@@ -33,7 +32,7 @@ local function new(tab_buffer_manager)
     end
 
     for _, buffer in pairs(buffers_to_list) do
-      vim.bo[buffer].buflisted = true
+      m._tracked_buffers.show(buffer)
     end
   end
 
