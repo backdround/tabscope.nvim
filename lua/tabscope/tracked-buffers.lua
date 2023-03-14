@@ -42,6 +42,10 @@ local function new()
     b.remove(event.buf)
   end)
 
+  u.on_event("BufWipeout", function(event)
+    b.remove(event.buf)
+  end)
+
   b.remove = function(id)
     b._ignore_bufdelete = true
     vim.bo[id].buflisted = false
