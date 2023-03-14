@@ -3,7 +3,7 @@ local u = require("tabscope.utils")
 local function new()
   local b = {}
   b._buffers = {}
-  b._on_buf_untrack_callbacks = {}
+  b._on_buf_removed_callbacks = {}
 
   -- Track all current listed buffers
   for _, id in ipairs(vim.api.nvim_list_bufs()) do
@@ -49,7 +49,7 @@ local function new()
 
     b._buffers[id] = nil
 
-    for _, callback in pairs(b._on_buf_untrack_callbacks) do
+    for _, callback in pairs(b._on_buf_removed_callbacks) do
       callback(id)
     end
   end
@@ -92,8 +92,8 @@ local function new()
     return b._buffers[id] == true
   end
 
-  b.on_buf_untrack = function(id, callback)
-    b._on_buf_untrack_callbacks[id] = callback
+  b.on_buf_removed = function(id, callback)
+    b._on_buf_removed_callbacks[id] = callback
   end
 
   b.remove_not_visible_buffers = function()

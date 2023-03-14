@@ -31,7 +31,7 @@ local function new(tracked_buffers)
     m._buffers_by_tab[current_tab][buffer] = true
   end
 
-  m._buffer_untrack_handler = function(id)
+  m._buffer_removed_handler = function(id)
     for _, buffers in pairs(m._buffers_by_tab) do
       buffers[id] = nil
     end
@@ -103,7 +103,7 @@ local function new(tracked_buffers)
   -- Sets event handlers
   u.on_buffocused(m._buffer_focus_handler)
   u.on_event("TabClosed", m._tab_closed_handler)
-  m._tracked_buffers.on_buf_untrack("tab-buffers", m._buffer_untrack_handler)
+  m._tracked_buffers.on_buf_removed("tab-buffers", m._buffer_removed_handler)
 
   return m
 end
