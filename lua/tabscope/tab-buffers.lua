@@ -36,6 +36,25 @@ local function new(tracked_buffers)
       end
     end
 
+    -- Gets all buffers that belongs to living tabs
+    local remaining_buffers = {}
+    for tab, _ in pairs(m._buffers_by_tab) do
+      if not vim.tbl_contains(closed_tabs, tab) then
+        for buffer, _ in pairs(m._buffers_by_tab[tab]) do
+          table.insert(remaining_buffers, buffer)
+        end
+      end
+    end
+
+    -- Untrack all buffers that don't belong to living tabs
+    for _, tab in ipairs(closed_tabs) do
+      for buffer, _ in pairs(m._buffers_by_tab[tab]) do
+        if not vim.tbl_contains(remaining_buffers, buffer) then
+          m._tracked_buffers.untrack(buffer)
+        end
+      end
+    end
+
     for _, tab in ipairs(closed_tabs) do
       m._buffers_by_tab[tab] = nil
     end

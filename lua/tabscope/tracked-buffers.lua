@@ -71,6 +71,16 @@ local function new()
     b._is_showing = false
   end
 
+  b.untrack = function(id)
+    -- Buffer must be tracked
+    if not b._buffers[id] then
+      u.unexpected_behaviour()
+      return
+    end
+
+    vim.bo[id].buflisted = false
+  end
+
   b.get_listed_buffers = function()
     local list = {}
     for id, _ in pairs(b._buffers) do
