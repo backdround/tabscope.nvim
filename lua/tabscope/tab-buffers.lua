@@ -46,11 +46,11 @@ local function new(tracked_buffers)
       end
     end
 
-    -- Untrack all buffers that don't belong to living tabs
+    -- Remove all buffers that don't belong to living tabs
     for _, tab in ipairs(closed_tabs) do
       for buffer, _ in pairs(m._buffers_by_tab[tab]) do
         if not vim.tbl_contains(remaining_buffers, buffer) then
-          m._tracked_buffers.untrack(buffer)
+          m._tracked_buffers.remove(buffer)
         end
       end
     end

@@ -18,12 +18,12 @@ M.setup = function(_)
     require("tabscope.listed-buffers").new(M.tracked_buffers, M.tab_buffers)
 
   local reset_plugin_state = function()
+    M.tracked_buffers.remove_not_visible_buffers()
     M.tab_buffers.reset()
     M.listed_buffers.update()
   end
 
   u.on_event("SessionLoadPost", reset_plugin_state)
-
   reset_plugin_state()
 
   vim.api.nvim_create_user_command("TabScopeDebug", function()

@@ -5,9 +5,15 @@ local function new()
   b._buffers = {}
   b._on_buf_untrack_callbacks = {}
 
+  -- Track all current listed buffers
+  for _, id in ipairs(vim.api.nvim_list_bufs()) do
+    if vim.bo[id].buflisted then
+      b._buffers[id] = true
+    end
+  end
+
   b._is_showing = false
-  b._add = function(event)
-    local id = event.buf
+  b._add = function(id)
     if b._is_showing then
       return
     end
@@ -23,29 +29,30 @@ local function new()
     b._buffers[id] = true
   end
 
-  b._is_hidding = false
-  b._delete = function(event)
-    local id = event.buf
-    if b._is_hidding then
+  -- Sets event handlers
+  u.on_event("BufAdd", function(event)
+    b._add(event.buf)
+  end)
+
+  b._ignore_bufdelete = false
+  u.on_event("BufDelete", function(event)
+    if b._ignore_bufdelete then
       return
     end
+    b.remove(event.buf)
+  end)
+
+  b.remove = function(id)
+    b._ignore_bufdelete = true
+    vim.bo[id].buflisted = false
+    b._ignore_bufdelete = false
 
     b._buffers[id] = nil
+
     for _, callback in pairs(b._on_buf_untrack_callbacks) do
       callback(id)
     end
   end
-
-  -- Track all current listed buffers
-  for _, id in ipairs(vim.api.nvim_list_bufs()) do
-    if vim.bo[id].buflisted then
-      b._buffers[id] = true
-    end
-  end
-
-  -- Sets event handlers
-  u.on_event("BufAdd", b._add)
-  u.on_event("BufDelete", b._delete)
 
   b.hide = function(id)
     -- Buffer must be tracked
@@ -54,9 +61,9 @@ local function new()
       return
     end
 
-    b._is_hidding = true
+    b._ignore_bufdelete = true
     vim.bo[id].buflisted = false
-    b._is_hidding = false
+    b._ignore_bufdelete = false
   end
 
   b.show = function(id)
@@ -69,16 +76,6 @@ local function new()
     b._is_showing = true
     vim.bo[id].buflisted = true
     b._is_showing = false
-  end
-
-  b.untrack = function(id)
-    -- Buffer must be tracked
-    if not b._buffers[id] then
-      u.unexpected_behaviour()
-      return
-    end
-
-    vim.bo[id].buflisted = false
   end
 
   b.get_listed_buffers = function()
@@ -97,6 +94,27 @@ local function new()
 
   b.on_buf_untrack = function(id, callback)
     b._on_buf_untrack_callbacks[id] = callback
+  end
+
+  b.remove_not_visible_buffers = function()
+    local visible_buffers = {}
+    for _, tab in ipairs(vim.api.nvim_list_tabpages()) do
+      for _, win in ipairs(vim.api.nvim_tabpage_list_wins(tab)) do
+        local id = vim.api.nvim_win_get_buf(win)
+        table.insert(visible_buffers, id)
+      end
+    end
+
+    local buffers_to_remove = {}
+    for id, _ in pairs(b._buffers) do
+      if not vim.tbl_contains(visible_buffers, id) then
+        table.insert(buffers_to_remove, id)
+      end
+    end
+
+    for _, id in ipairs(buffers_to_remove) do
+      b.remove(id)
+    end
   end
 
   b.get_internal_representation = function()
