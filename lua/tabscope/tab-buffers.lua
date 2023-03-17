@@ -18,9 +18,8 @@ local function new(tracked_buffers)
   end
 
   -- Tries to start tracks for current buffer
-  m._buffer_focus_handler = function()
-    local buffer = vim.api.nvim_get_current_buf()
-    if not m._tracked_buffers.is_tracked(buffer) then
+  m.try_to_add_the_buffer = function(id)
+    if not m._tracked_buffers.is_tracked(id) then
       return
     end
 
@@ -28,7 +27,7 @@ local function new(tracked_buffers)
     if not m._buffers_by_tab[current_tab] then
       m._buffers_by_tab[current_tab] = {}
     end
-    m._buffers_by_tab[current_tab][buffer] = true
+    m._buffers_by_tab[current_tab][id] = true
   end
 
   m._buffer_removed_handler = function(id)
@@ -101,7 +100,13 @@ local function new(tracked_buffers)
   end
 
   -- Sets event handlers
-  u.on_buffocused(m._buffer_focus_handler)
+  u.on_event("BufAdd", function(event)
+    m.try_to_add_the_buffer(event.buf)
+  end)
+  u.on_buffocused(function()
+    local id = vim.api.nvim_get_current_buf()
+    m.try_to_add_the_buffer(id)
+  end)
   u.on_event("TabClosed", m._tab_closed_handler)
   m._tracked_buffers.on_buf_removed("tab-buffers", m._buffer_removed_handler)
 
