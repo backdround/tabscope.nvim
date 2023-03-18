@@ -85,35 +85,8 @@ local function new(tracked_buffers)
     return tab_local_buffers
   end
 
-  m.get_internal_representation = function()
-    -- Gets sorted tab ids
-    local sorted_tab_ids = {}
-    for tab, _ in pairs(m._buffers_by_tab) do
-      table.insert(sorted_tab_ids, tab)
-    end
-    table.sort(sorted_tab_ids)
-
-    -- Gets tabs representation
-    local representation = "Tab local buffers:\n"
-    for _, tab in ipairs(sorted_tab_ids) do
-      representation = representation .. "  tab " .. tostring(tab) .. ":\n"
-
-      -- Gets sorted buffer ids
-      local sorted_buffer_ids = {}
-      for id, _ in pairs(m._buffers_by_tab[tab]) do
-        table.insert(sorted_buffer_ids, id)
-      end
-      table.sort(sorted_buffer_ids)
-
-      -- Gets buffer ids representation
-      for _, id in ipairs(sorted_buffer_ids) do
-        local buffer_representation = u.get_buffer_representation(id)
-        representation =
-          string.format("%s    %s\n", representation, buffer_representation)
-      end
-    end
-
-    return representation
+  m.get_tab_buffers = function()
+    return vim.deepcopy(m._buffers_by_tab)
   end
 
   -- Sets event handlers

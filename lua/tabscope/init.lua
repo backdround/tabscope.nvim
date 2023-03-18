@@ -1,13 +1,21 @@
 local u = require("tabscope.utils")
+local rep = require("tabscope.representation")
 
 local M = {}
 
 M.get_internal_representation = function()
   local result = ""
-  result = result .. M.tracked_buffers.get_internal_representation() .. "--\n"
-  result = result .. M.tab_buffers.get_internal_representation() .. "--\n"
-  result = result .. u.get_tabs_representation() .. "--\n"
-  result = result .. u.get_listed_buffers_representation() .. "--\n"
+
+  local tracked_buffers =
+    rep.buffers("Tracked buffers", M.tracked_buffers.get_buffers(), "")
+  result = result .. tracked_buffers .. "--\n"
+
+  local tab_local_buffers =
+    rep.tabs("Tab local buffers", M.tab_buffers.get_tab_buffers())
+  result = result .. tab_local_buffers .. "--\n"
+
+  result = result .. rep.visible_tabs() .. "--\n"
+  result = result .. rep.listed_buffers() .. "--"
   return result
 end
 
