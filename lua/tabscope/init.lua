@@ -20,10 +20,12 @@ M.get_internal_representation = function()
 end
 
 M.setup = function(_)
-  M.tracked_buffers = require("tabscope.tracked-buffers").new()
-  M.tab_buffers = require("tabscope.tab-buffers").new(M.tracked_buffers)
-  M.listed_buffers =
-    require("tabscope.listed-buffers").new(M.tracked_buffers, M.tab_buffers)
+  M.tracked_buffers = require("tabscope.buffer-managers.tracked").new()
+  M.tab_buffers = require("tabscope.buffer-managers.tab").new(M.tracked_buffers)
+  M.listed_buffers = require("tabscope.buffer-managers.listed").new(
+    M.tracked_buffers,
+    M.tab_buffers
+  )
 
   local reset_plugin_state = function()
     M.tracked_buffers.remove_not_visible_buffers()
