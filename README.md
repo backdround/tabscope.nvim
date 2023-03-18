@@ -1,3 +1,4 @@
+[![Tests](https://img.shields.io/github/actions/workflow/status/backdround/tabscope.nvim/tests.yaml?branch=main&label=tests&style=flat-square)](https://github.com/backdround/tabscope.nvim/actions)
 # Tabscope.nvim
 It's a neovim plugin that turns `global` buffers into `tab-local` buffers.
 So you can use buffers while have different contexts in different tabs.
