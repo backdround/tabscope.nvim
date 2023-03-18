@@ -122,9 +122,19 @@ local function new()
   end
 
   b.get_internal_representation = function()
-    local representation = "Tracked buffers:\n"
+    -- Gets sorted buffer ids
+    local sorted_buffer_ids = {}
     for id, _ in pairs(b._buffers) do
-      representation = representation .. "  " .. tostring(id) .. "\n"
+      table.insert(sorted_buffer_ids, id)
+    end
+    table.sort(sorted_buffer_ids)
+
+    -- Gets reperesentation
+    local representation = "Tracked buffers:\n"
+    for _, id in ipairs(sorted_buffer_ids) do
+      local buffer_representation = u.get_buffer_representation(id)
+      representation =
+        string.format("%s  %s\n", representation, buffer_representation)
     end
     return representation
   end

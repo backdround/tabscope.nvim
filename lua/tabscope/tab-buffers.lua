@@ -86,16 +86,33 @@ local function new(tracked_buffers)
   end
 
   m.get_internal_representation = function()
+    -- Gets sorted tab ids
+    local sorted_tab_ids = {}
+    for tab, _ in pairs(m._buffers_by_tab) do
+      table.insert(sorted_tab_ids, tab)
+    end
+    table.sort(sorted_tab_ids)
+
+    -- Gets tabs representation
     local representation = "Tab local buffers:\n"
-    for tab, buffers in pairs(m._buffers_by_tab) do
+    for _, tab in ipairs(sorted_tab_ids) do
       representation = representation .. "  tab " .. tostring(tab) .. ":\n"
-      for buffer, _ in pairs(buffers) do
-        local name = vim.api.nvim_buf_get_name(buffer)
-        name = vim.fn.fnamemodify(name, ":t")
+
+      -- Gets sorted buffer ids
+      local sorted_buffer_ids = {}
+      for id, _ in pairs(m._buffers_by_tab[tab]) do
+        table.insert(sorted_buffer_ids, id)
+      end
+      table.sort(sorted_buffer_ids)
+
+      -- Gets buffer ids representation
+      for _, id in ipairs(sorted_buffer_ids) do
+        local buffer_representation = u.get_buffer_representation(id)
         representation =
-          string.format("%s    %s %s\n", representation, buffer, name)
+          string.format("%s    %s\n", representation, buffer_representation)
       end
     end
+
     return representation
   end
 

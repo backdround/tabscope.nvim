@@ -44,26 +44,48 @@ M.on_buffocused = function(callback)
   })
 end
 
+M.get_buffer_representation = function(id)
+  local name = vim.api.nvim_buf_get_name(id)
+  name = vim.fn.fnamemodify(name, ":t")
+  local representation = string.format("%s %s", tostring(id), name)
+  return representation
+end
+
 M.get_listed_buffers_representation = function()
   local representation = "Listed buffers:\n"
-  for _, id in ipairs(vim.api.nvim_list_bufs()) do
+  local sorted_buffer_ids = vim.api.nvim_list_bufs()
+  table.sort(sorted_buffer_ids)
+  for _, id in ipairs(sorted_buffer_ids) do
     if vim.bo[id].buflisted then
-      representation = representation .. "  " .. tostring(id) .. "\n"
+      local buffer_representation = M.get_buffer_representation(id)
+      representation =
+        string.format("%s  %s\n", representation, buffer_representation)
     end
   end
   return representation
 end
 
 M.get_tabs_representation = function()
+  local sorted_tab_ids = vim.api.nvim_list_tabpages()
+  table.sort(sorted_tab_ids)
+
   local representation = "Tab visible buffers:\n"
-  for _, tab in ipairs(vim.api.nvim_list_tabpages()) do
+  for _, tab in ipairs(sorted_tab_ids) do
     representation = representation .. "  tab " .. tostring(tab) .. ":\n"
+
+    -- Gets sorted buffer ids
+    local sorted_buffer_ids = {}
     for _, win in ipairs(vim.api.nvim_tabpage_list_wins(tab)) do
-      local buffer = vim.api.nvim_win_get_buf(win)
-      local name = vim.api.nvim_buf_get_name(buffer)
-      name = vim.fn.fnamemodify(name, ":t")
+      local id = vim.api.nvim_win_get_buf(win)
+      table.insert(sorted_buffer_ids, id)
+    end
+    table.sort(sorted_buffer_ids)
+
+    -- Gets tab representation
+    for _, id in ipairs(sorted_buffer_ids) do
+      local buffer_representation = M.get_buffer_representation(id)
       representation =
-        string.format("%s    %s %s\n", representation, buffer, name)
+        string.format("%s    %s\n", representation, buffer_representation)
     end
   end
   return representation

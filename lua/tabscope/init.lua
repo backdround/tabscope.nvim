@@ -4,10 +4,10 @@ local M = {}
 
 M.get_internal_representation = function()
   local result = ""
+  result = result .. M.tracked_buffers.get_internal_representation() .. "--\n"
   result = result .. M.tab_buffers.get_internal_representation() .. "--\n"
   result = result .. u.get_tabs_representation() .. "--\n"
   result = result .. u.get_listed_buffers_representation() .. "--\n"
-  result = result .. M.tracked_buffers.get_internal_representation() .. "--\n"
   return result
 end
 
