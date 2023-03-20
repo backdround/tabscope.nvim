@@ -3,6 +3,8 @@ local rep = require("tabscope.representation")
 
 local M = {}
 
+--- Returns current representation of plugin state.
+---@return string
 M.get_internal_representation = function()
   local result = ""
 
@@ -19,6 +21,7 @@ M.get_internal_representation = function()
   return result
 end
 
+--- Launches the plugin
 M.setup = function(_)
   M.tracked_buffers = require("tabscope.buffer-managers.tracked").new()
   M.tab_buffers = require("tabscope.buffer-managers.tab").new(M.tracked_buffers)

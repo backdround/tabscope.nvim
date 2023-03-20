@@ -1,8 +1,14 @@
 local u = require("tabscope.utils")
 
--- Returns a table that tracks tab local buffers.
+--- Creates new Tab_local_buffer_manager.
+---@return Tab_local_buffer_manager
 local function new(tracked_buffers)
+  --- It manages tab local buffers. It removes buffers that don't need anymore.
+  ---@class Tab_local_buffer_manager
+  ---@field _tracked_buffers Tracked_buffer_manager
+  ---@field _buffers_by_tab table<number, table<number, true>> @ table of tabs that contains tables of buffers
   local m = {}
+
   m._tracked_buffers = tracked_buffers
   m._buffers_by_tab = {}
 
@@ -17,7 +23,8 @@ local function new(tracked_buffers)
     end
   end
 
-  -- Tries to start tracks for current buffer
+  --- Tries to add the given buffer to tab local buffers.
+  ---@param id number @ buffer id
   m.try_to_add_the_buffer = function(id)
     if not m._tracked_buffers.is_tracked(id) then
       return
@@ -30,13 +37,15 @@ local function new(tracked_buffers)
     m._buffers_by_tab[current_tab][id] = true
   end
 
+  --- Handles buffer deletion.
+  ---@param id number
   m._buffer_removed_handler = function(id)
     for _, buffers in pairs(m._buffers_by_tab) do
       buffers[id] = nil
     end
   end
 
-  -- Stops tracking closed tabs
+  -- Handles tab closing. It removes buffers that don't need anymore.
   m._tab_closed_handler = function()
     local current_tabs = vim.api.nvim_list_tabpages()
     local closed_tabs = {}
@@ -46,7 +55,7 @@ local function new(tracked_buffers)
       end
     end
 
-    -- Gets all buffers that belongs to living tabs
+    -- Gets all buffers that belongs to living tabs.
     local remaining_buffers = {}
     for tab, _ in pairs(m._buffers_by_tab) do
       if not vim.tbl_contains(closed_tabs, tab) then
@@ -56,7 +65,7 @@ local function new(tracked_buffers)
       end
     end
 
-    -- Remove all buffers that don't belong to living tabs
+    -- Remove all buffers that don't belong to living tabs.
     for _, tab in ipairs(closed_tabs) do
       for buffer, _ in pairs(m._buffers_by_tab[tab]) do
         if not vim.tbl_contains(remaining_buffers, buffer) then
@@ -70,7 +79,8 @@ local function new(tracked_buffers)
     end
   end
 
-  -- Returns a list of current tab local buffers
+  --- Returns a list of current tab local buffers.
+  ---@return number[] buffer ids
   m.get_current_tab_local_buffers = function()
     local tab = vim.api.nvim_get_current_tabpage()
 
@@ -85,11 +95,14 @@ local function new(tracked_buffers)
     return tab_local_buffers
   end
 
+  --- Returns all tab local buffers (<tab, <buffer, true>>).
+  --- Please use it only for log purpouse.
+  ---@return table<number, table<number, true>>
   m.get_tab_buffers = function()
     return vim.deepcopy(m._buffers_by_tab)
   end
 
-  -- Sets event handlers
+  -- Sets event handlers.
   u.on_event("BufAdd", function(event)
     m.try_to_add_the_buffer(event.buf)
   end)

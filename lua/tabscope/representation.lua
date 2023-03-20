@@ -1,14 +1,20 @@
--- Module provides utility functions to represent buffers and tabs.
+--- Module provides utility functions to represent buffers and tabs.
 local M = {}
 
+--- Returns buffer representation.
+---@param id number @ buffer id.
+---@return string
 local function get_buffer_representation(id)
   local name = vim.api.nvim_buf_get_name(id)
   name = vim.fn.fnamemodify(name, ":t")
   return tostring(id) .. " " .. name
 end
 
--- Returns string representation of the given buffers.
--- buffers - a table where keys are buffers ids.
+--- Returns string representation of the given buffer array.
+---@param title string @ buffer description
+---@param buffers table<number, true> @ table of buffer ids
+---@param indention string
+---@return string
 M.buffers = function(title, buffers, indention)
   -- Gets sorted buffer ids
   local sorted_buffer_ids = {}
@@ -31,9 +37,10 @@ M.buffers = function(title, buffers, indention)
   return representation
 end
 
--- Returns string representation of the given tabs.
--- tabs_with_buffers - a table where keys are tab ids and values are
--- buffer tables.
+--- Returns string representation of the given tabs.
+---@param title string @ tab description
+---@param tabs_with_buffers table<number, table<number, true>> @ a table with tabs, that contain tables with buffers
+---@return string
 M.tabs = function(title, tabs_with_buffers)
   -- Gets sorted tab ids
   local sorted_tab_ids = {}
@@ -53,7 +60,8 @@ M.tabs = function(title, tabs_with_buffers)
   return representation
 end
 
--- Returns listed buffers representation.
+--- Returns listed buffers representation.
+---@return string
 M.listed_buffers = function()
   local listed_buffers = {}
   for _, id in ipairs(vim.api.nvim_list_bufs()) do
@@ -64,7 +72,8 @@ M.listed_buffers = function()
   return M.buffers("Listed buffers", listed_buffers, "")
 end
 
--- Returns visible tabs representation.
+--- Returns visible tabs representation.
+---@return string
 M.visible_tabs = function()
   local tabs_with_buffers = {}
   for _, tab in ipairs(vim.api.nvim_list_tabpages()) do

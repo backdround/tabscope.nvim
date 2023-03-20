@@ -1,11 +1,18 @@
 local u = require("tabscope.utils")
 
--- Returns a table that manages listed buffers.
+--- Creates new Listed_buffer_manager.
+---@return Listed_buffer_manager
 local function new(tracked_buffers, tab_buffers)
+  --- It sets listed (visible) buffers to local tab buffres.
+  ---@class Listed_buffer_manager
+  ---@field _tab_buffers Tab_local_buffer_manager
+  ---@field _tracked_buffers Tracked_buffer_manager
+  ---@field _have_to_update boolean @ flag responsible for necessity to update.
   local m = {}
   m._tab_buffers = tab_buffers
   m._tracked_buffers = tracked_buffers
 
+  --- Sets current listed buffers to tab local buffers.
   m.update = function()
     local current_listed_buffers = m._tracked_buffers.get_listed_buffers()
     local current_tab_local_buffers = m._tab_buffers.get_current_tab_local_buffers()
@@ -35,6 +42,7 @@ local function new(tracked_buffers, tab_buffers)
     end
   end
 
+  --- Calls update only when have to.
   m._try_to_update = function()
     if m._have_to_update then
       m.update()
@@ -42,6 +50,7 @@ local function new(tracked_buffers, tab_buffers)
     end
   end
 
+  -- Sets event handlers
   u.on_buffocused(m._try_to_update)
   u.on_event("TabLeave", function()
     m._have_to_update = true
