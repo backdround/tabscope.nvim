@@ -4,7 +4,7 @@ local M = {}
 --- Returns buffer representation.
 ---@param id number @ buffer id.
 ---@return string
-local function get_buffer_representation(id)
+M.buffer = function(id)
   local name = vim.api.nvim_buf_get_name(id)
   name = vim.fn.fnamemodify(name, ":t")
   return tostring(id) .. " " .. name
@@ -26,7 +26,7 @@ M.buffers = function(title, buffers, indention)
   -- Gets reperesentation
   local representation = indention .. title .. ":\n"
   for _, id in ipairs(sorted_buffer_ids) do
-    local buffer_representation = get_buffer_representation(id)
+    local buffer_representation = M.buffer(id)
     representation = string.format(
       "%s%s  %s\n",
       representation,

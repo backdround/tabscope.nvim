@@ -9,7 +9,7 @@ local function _get_augroup()
 end
 
 --- Registers callback that triggers when event happened
----@param event string @ it's a vim event string
+---@param event string|string[] @ it's a vim event string
 ---@param callback function
 M.on_event = function(event, callback)
   vim.api.nvim_create_autocmd(event, {

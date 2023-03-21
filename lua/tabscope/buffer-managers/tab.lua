@@ -25,7 +25,7 @@ local function new(tracked_buffers)
 
   --- Tries to add the given buffer to tab local buffers.
   ---@param id number @ buffer id
-  m.try_to_add_the_buffer = function(id)
+  m._try_to_add_the_buffer = function(id)
     if not m._tracked_buffers.is_tracked(id) then
       return
     end
@@ -65,17 +65,24 @@ local function new(tracked_buffers)
       end
     end
 
-    -- Remove all buffers that don't belong to living tabs.
+    -- Gets all buffers that don't belongs to any living tabs.
+    local orphan_buffers = {}
     for _, tab in ipairs(closed_tabs) do
       for buffer, _ in pairs(m._buffers_by_tab[tab]) do
         if not vim.tbl_contains(remaining_buffers, buffer) then
-          m._tracked_buffers.remove(buffer)
+          table.insert(orphan_buffers, buffer)
         end
       end
     end
 
+    -- Remove all closed tabs.
     for _, tab in ipairs(closed_tabs) do
       m._buffers_by_tab[tab] = nil
+    end
+
+    -- Notify that all orphan buffers must be removed.
+    for _, buffer in ipairs(orphan_buffers) do
+      m._tracked_buffers.remove(buffer)
     end
   end
 
@@ -104,11 +111,11 @@ local function new(tracked_buffers)
 
   -- Sets event handlers.
   u.on_event("BufAdd", function(event)
-    m.try_to_add_the_buffer(event.buf)
+    m._try_to_add_the_buffer(event.buf)
   end)
   u.on_buffocused(function()
     local id = vim.api.nvim_get_current_buf()
-    m.try_to_add_the_buffer(id)
+    m._try_to_add_the_buffer(id)
   end)
   u.on_event("TabClosed", m._tab_closed_handler)
   m._tracked_buffers.on_buf_removed("tab-buffers", m._buffer_removed_handler)

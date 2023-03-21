@@ -27,10 +27,6 @@ local function new()
 
   --- Handles BufAdd event
   b._add = function(id)
-    if b._ignore_bufadd then
-      return
-    end
-
     if id == nil or id < 1 then
       return
     end
@@ -44,6 +40,10 @@ local function new()
 
   -- Sets event handlers.
   u.on_event("BufAdd", function(event)
+    if b._ignore_bufadd then
+      return
+    end
+
     b._add(event.buf)
   end)
 
@@ -61,6 +61,10 @@ local function new()
   --- Removes buffer from tracked buffers and delists it.
   ---@param id number buffer id
   b.remove = function(id)
+    if not b._buffers[id] then
+      return
+    end
+
     b._ignore_bufdelete = true
     vim.bo[id].buflisted = false
     b._ignore_bufdelete = false
