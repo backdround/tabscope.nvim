@@ -46,7 +46,7 @@ run_case() {
 EOF
 
   # Runs the test.
-  nvim --headless -u ./launch.lua
+  nvim --headless --clean -u ./launch.lua
 }
 
 # Each test case here invokes the case with the same name, but space
