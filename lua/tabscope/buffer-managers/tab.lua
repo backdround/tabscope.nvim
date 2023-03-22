@@ -86,6 +86,41 @@ local function new(tracked_buffers)
     end
   end
 
+  --- Removes buffers that isn't visible in any window for each tab.
+  m.remove_not_visible_buffers = function()
+    -- Removes not visible buffers
+    local removed_buffers = {}
+    for tab, tab_local_buffers in pairs(m._buffers_by_tab) do
+      local tab_visible_buffers = {}
+      for _, win in ipairs(vim.api.nvim_tabpage_list_wins(tab)) do
+        local buffer = vim.api.nvim_win_get_buf(win)
+        table.insert(tab_visible_buffers, buffer)
+      end
+
+      for buffer, _ in pairs(tab_local_buffers) do
+        if not vim.tbl_contains(tab_visible_buffers, buffer) then
+          removed_buffers[buffer] = true
+          tab_local_buffers[buffer] = nil
+        end
+      end
+    end
+
+    -- Gets all orphan buffers
+    local orphan_buffers = removed_buffers
+    for _, tab_local_buffers in pairs(m._buffers_by_tab) do
+      for buffer, _ in pairs(tab_local_buffers) do
+        if orphan_buffers[buffer] then
+          orphan_buffers[buffer] = nil
+        end
+      end
+    end
+
+    -- Notify that all orphan buffers must be removed.
+    for buffer, _ in pairs(orphan_buffers) do
+      m._tracked_buffers.remove(buffer)
+    end
+  end
+
   --- Returns a list of current tab local buffers.
   ---@return number[] buffer ids
   m.get_current_tab_local_buffers = function()

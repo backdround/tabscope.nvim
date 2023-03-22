@@ -126,4 +126,29 @@ M.use_only_visible_buffers_on_SessionLoadPost = function()
   helpers.assert_listed_buffers({ "first", "second" })
 end
 
+M.use_only_visible_buffers_on_SessionLoadPost_even_if_some_buffers_are_mutual = function(
+)
+  require("tabscope").setup()
+
+  -- Emulate session loading
+
+  -- Creates first tab
+  helpers.create_buffers({ "first", "second", "third" })
+  helpers.open_buffer("first")
+
+  -- Creates second tab
+  helpers.new_tab_with_buffer("fourth")
+  helpers.open_buffer("second")
+  helpers.split("third")
+
+  -- Triggers SessionLoadPost
+  vim.cmd("doautoall SessionLoadPost")
+  vim.wait(10)
+
+  -- Asserts that only visible buffers listed.
+  helpers.assert_listed_buffers({ "second", "third" })
+  helpers.tabprevious()
+  helpers.assert_listed_buffers({ "first" })
+end
+
 return M

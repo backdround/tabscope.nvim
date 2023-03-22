@@ -75,3 +75,7 @@ EOF
 @test "use only visible buffers on SessionLoadPost" {
   run_case
 }
+
+@test "use only visible buffers on SessionLoadPost even if some buffers are mutual" {
+  run_case
+}

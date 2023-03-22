@@ -32,6 +32,7 @@ M.setup = function(_)
 
   local reset_plugin_state = function()
     M.tracked_buffers.remove_not_visible_buffers()
+    M.tab_buffers.remove_not_visible_buffers()
     M.listed_buffers.update()
   end
 
