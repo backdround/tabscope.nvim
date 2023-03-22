@@ -151,4 +151,67 @@ M.use_only_visible_buffers_on_SessionLoadPost_even_if_some_buffers_are_mutual = 
   helpers.assert_listed_buffers({ "first" })
 end
 
+M.remove_local_tab_buffer_with_mutual_appearance = function()
+  local tabscope = require("tabscope")
+  tabscope.setup()
+
+  -- Creates first tab
+  helpers.create_buffers({ "first", "second" })
+  helpers.open_buffer("first")
+
+  -- Creates second tab
+  helpers.new_tab_with_buffer("third")
+  helpers.split("second")
+
+  -- Removes local second buffer
+  local second_buffer = helpers.get_buffer_by_name("second")
+  tabscope.remove_tab_buffer(second_buffer)
+
+  -- Asserts that second buffer was deleted only for local tab
+  helpers.assert_listed_buffers({ "third" })
+  helpers.tabprevious()
+  helpers.assert_listed_buffers({ "first", "second" })
+end
+
+M.remove_local_tab_buffer_with_last_appearance = function()
+  local tabscope = require("tabscope")
+  tabscope.setup()
+
+  -- Creates first tab
+  helpers.create_buffers({ "first", "second" })
+
+  -- Creates second tab
+  helpers.new_tab_with_buffer("third")
+  helpers.split("fourth")
+
+  -- Removes local fourth buffer
+  local fourth_buffer = helpers.get_buffer_by_name("fourth")
+  tabscope.remove_tab_buffer(fourth_buffer)
+
+  -- Asserts that fourth buffer was deleted only for local tab
+  helpers.assert_listed_buffers({ "third" })
+  helpers.tabprevious()
+  helpers.assert_listed_buffers({ "first", "second" })
+end
+
+M.remove_local_tab_buffer_that_was_last_for_tab = function()
+  local tabscope = require("tabscope")
+  tabscope.setup()
+
+  -- Creates first tab
+  helpers.create_buffers({ "first", "second" })
+
+  -- Creates second tab
+  helpers.new_tab_with_buffer("third")
+
+  -- Removes local third buffer
+  local third_buffer = helpers.get_buffer_by_name("third")
+  tabscope.remove_tab_buffer(third_buffer)
+
+  -- Asserts that third buffer was replaced by noname buffer
+  helpers.assert_listed_buffers({ "" })
+  helpers.tabprevious()
+  helpers.assert_listed_buffers({ "first", "second" })
+end
+
 return M

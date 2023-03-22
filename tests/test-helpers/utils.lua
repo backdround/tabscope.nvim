@@ -26,4 +26,16 @@ M.get_listed_buffer_names = function()
   return listed_buffer_names
 end
 
+M.get_buffer_by_name = function(search_name)
+  for _, id in ipairs(M.get_listed_buffers()) do
+    local name = vim.api.nvim_buf_get_name(id)
+    name = vim.fn.fnamemodify(name, ":t")
+    if name == search_name then
+      return id
+    end
+  end
+
+  error("There is no buffer with the given name")
+end
+
 return M

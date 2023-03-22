@@ -121,6 +121,61 @@ local function new(tracked_buffers)
     end
   end
 
+  --- Removes buffer from current tab
+  ---@param id number @ buffer to remove
+  m.remove_buffer_for_current_tab = function(id)
+    if id == nil or id == 0 then
+      id = vim.api.nvim_get_current_buf()
+    end
+
+    local current_tab = vim.api.nvim_get_current_tabpage()
+    if not m._buffers_by_tab[current_tab][id] then
+      error("There is no buffer " .. tostring(id) .. " in the current tab")
+    end
+
+    local show_another_buffer_for_window = function(tab, win)
+      local another_buffer_to_show = -1
+      for buffer, _ in pairs(m._buffers_by_tab[tab]) do
+        if buffer ~= id then
+          another_buffer_to_show = buffer
+          break
+        end
+      end
+
+      if another_buffer_to_show == -1 then
+        another_buffer_to_show = vim.api.nvim_create_buf(true, true)
+      end
+
+      vim.api.nvim_win_set_buf(win, another_buffer_to_show)
+    end
+
+    -- Shows another buffer for windows in current tab with removed buffer.
+    local wins = vim.api.nvim_tabpage_list_wins(current_tab)
+    for _, win in ipairs(wins) do
+      if id == vim.api.nvim_win_get_buf(win) then
+        show_another_buffer_for_window(current_tab, win)
+      end
+    end
+
+    m._buffers_by_tab[current_tab][id] = nil
+
+    -- Checks if the buffer is orphan now.
+    local orphan = true
+    for _, buffers in pairs(m._buffers_by_tab) do
+      for buffer, _ in pairs(buffers) do
+        if id == buffer then
+          orphan = false
+        end
+      end
+    end
+
+    if orphan then
+      m._tracked_buffers.remove(id)
+    else
+      m._tracked_buffers.hide(id)
+    end
+  end
+
   --- Returns a list of current tab local buffers.
   ---@return number[] buffer ids
   m.get_current_tab_local_buffers = function()

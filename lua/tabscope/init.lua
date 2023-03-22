@@ -45,4 +45,12 @@ M.setup = function(_)
   end, {})
 end
 
+M.remove_tab_buffer = function(id)
+  if M.tab_buffers == nil then
+    error("The plugin must be initialized")
+  end
+
+  M.tab_buffers.remove_buffer_for_current_tab(id)
+end
+
 return M

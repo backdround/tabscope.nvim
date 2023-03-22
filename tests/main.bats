@@ -79,3 +79,15 @@ EOF
 @test "use only visible buffers on SessionLoadPost even if some buffers are mutual" {
   run_case
 }
+
+@test "remove local tab buffer with mutual appearance" {
+  run_case
+}
+
+@test "remove local tab buffer with last appearance" {
+  run_case
+}
+
+@test "remove local tab buffer that was last for tab" {
+  run_case
+}
