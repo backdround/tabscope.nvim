@@ -129,8 +129,13 @@ local function new(tracked_buffers)
     end
 
     local current_tab = vim.api.nvim_get_current_tabpage()
+
+    -- Check if the buffer is managed by the plugin.
     if not m._buffers_by_tab[current_tab][id] then
-      error("There is no buffer " .. tostring(id) .. " in the current tab")
+      if vim.fn.buflisted(id) == 1 then
+        vim.bo[id].buflisted = false
+      end
+      return
     end
 
     local show_another_buffer_for_window = function(tab, win)
